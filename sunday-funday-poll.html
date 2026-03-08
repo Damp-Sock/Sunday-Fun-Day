@@ -111,13 +111,31 @@
   .status-bar.error { color: var(--red); }
   .status-bar.ok { color: var(--green-dim); }
   .total-votes { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--amber); margin-bottom: 16px; letter-spacing: 2px; }
+
+  /* Admin / Reset panel */
+  .admin-panel { max-width: 480px; }
+  .admin-warning { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--muted); line-height: 1.8; margin-bottom: 24px; padding: 12px; border: 1px solid var(--border); letter-spacing: 1px; }
+  .admin-warning strong { color: var(--amber); }
+  .admin-field { margin-bottom: 16px; }
+  .admin-field label { display: block; font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 3px; color: var(--muted); margin-bottom: 6px; text-transform: uppercase; }
+  .admin-input { width: 100%; background: var(--bg); border: 1px solid var(--border); color: var(--green); font-family: 'Share Tech Mono', monospace; font-size: 20px; padding: 10px 14px; letter-spacing: 6px; outline: none; transition: border-color 0.15s; }
+  .admin-input:focus { border-color: var(--green-dim); }
+  .btn-danger { font-family: 'Barlow Condensed', sans-serif; font-size: 16px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; background: transparent; color: var(--red); border: 1px solid var(--red); padding: 12px 32px; cursor: pointer; transition: all 0.15s; }
+  .btn-danger:hover:not(:disabled) { background: rgba(255,58,58,0.1); box-shadow: 0 0 20px rgba(255,58,58,0.2); }
+  .btn-danger:disabled { opacity: 0.3; cursor: not-allowed; }
+  .admin-result { margin-top: 16px; font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 2px; padding: 12px; border: 1px solid; display: none; }
+  .admin-result.ok { color: var(--green); border-color: var(--green-dim); background: rgba(57,255,20,0.05); display: block; }
+  .admin-result.err { color: var(--red); border-color: rgba(255,58,58,0.4); background: rgba(255,58,58,0.05); display: block; }
+  .archive-list { margin-top: 24px; }
+  .archive-list h3 { font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 3px; color: var(--muted); margin-bottom: 10px; text-transform: uppercase; }
+  .archive-item { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--text); padding: 8px 12px; border: 1px solid var(--border); margin-bottom: 4px; letter-spacing: 1px; }
 </style>
 </head>
 <body>
 
 <script>
   // ⚙️ PASTE YOUR APPS SCRIPT DEPLOYMENT URL HERE:
-  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwWqrxK7QyFKRyGDLUbvx5RXm2FLj0Br28LWIi4kKSC6vvEj6ulhyp419Yu0U05_MzHjA/exec";
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxJ5W-u-OtU8DuZMkh7JPaCjmmZWIIDYX1CHTmJEZhXENUoKPZhX_rUJ9scgYRcSAUFDw/exec";
 </script>
 
 <div id="config-notice" class="config-notice">
@@ -147,6 +165,7 @@
 <div class="tabs">
   <button class="tab active" onclick="switchTab('vote')">▶ CAST VOTE</button>
   <button class="tab" onclick="switchTab('leaderboard')">📊 LIVE RESULTS</button>
+  <button class="tab" onclick="switchTab('admin')" style="margin-left:auto;color:rgba(255,58,58,0.5);border-color:rgba(255,58,58,0.2)">⚙ ADMIN</button>
 </div>
 
 <!-- VOTE TAB -->
@@ -186,6 +205,32 @@
       <div class="lb-empty">LOADING...</div>
     </div>
     <div class="status-bar" id="lb-status"></div>
+  </div>
+</div>
+
+<!-- ADMIN TAB -->
+<div id="tab-admin" class="tab-content">
+  <div class="main">
+    <div class="admin-panel">
+      <div class="section-label" style="color:var(--red);margin-top:0">ADMIN // RESET VOTES</div>
+      <div class="admin-warning">
+        <strong>⚠ WHAT THIS DOES:</strong><br>
+        The current "Votes" sheet will be renamed to <strong>Archive - [date/time]</strong> and a fresh empty sheet will be created. All previous vote data is preserved in the archive tab — nothing is deleted. Run this before each Sunday session to start a clean poll.
+      </div>
+      <div class="admin-field">
+        <label>Admin PIN</label>
+        <input type="password" class="admin-input" id="reset-pin" placeholder="••••" maxlength="10" onkeydown="if(event.key==='Enter') doReset()">
+      </div>
+      <button class="btn-danger" onclick="doReset()">⚡ ARCHIVE & RESET VOTES</button>
+      <div id="admin-result" class="admin-result"></div>
+
+      <div class="archive-list">
+        <h3>// Archived Sessions</h3>
+        <div id="archive-list-content" style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;">
+          Open your Google Sheet to view archived sessions as separate tabs.
+        </div>
+      </div>
+    </div>
   </div>
 </div>
 
@@ -409,6 +454,48 @@ async function checkConnection() {
   } catch {
     statusEl.textContent = 'OFFLINE'; statusEl.style.color = 'var(--red)';
   }
+}
+
+async function doReset() {
+  const pin = document.getElementById('reset-pin').value.trim();
+  const resultEl = document.getElementById('admin-result');
+  resultEl.className = 'admin-result';
+  resultEl.textContent = '';
+
+  if (!pin) {
+    resultEl.className = 'admin-result err';
+    resultEl.textContent = '✗ ENTER YOUR ADMIN PIN FIRST';
+    return;
+  }
+
+  const btn = document.querySelector('.btn-danger');
+  btn.disabled = true;
+  btn.textContent = '⏳ ARCHIVING...';
+
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'text/plain' },
+      body: JSON.stringify({ action: 'reset', pin })
+    });
+    const data = await res.json();
+    if (data.success) {
+      resultEl.className = 'admin-result ok';
+      resultEl.textContent = '✓ VOTES ARCHIVED — FRESH POLL IS LIVE. INFORM THE SQUAD.';
+      document.getElementById('reset-pin').value = '';
+      // Reload leaderboard to show empty state
+      loadLeaderboard();
+    } else {
+      resultEl.className = 'admin-result err';
+      resultEl.textContent = `✗ ${data.error || 'RESET FAILED'}`;
+    }
+  } catch (err) {
+    resultEl.className = 'admin-result err';
+    resultEl.textContent = '✗ NETWORK ERROR — CHECK CONNECTION';
+  }
+
+  btn.disabled = false;
+  btn.textContent = '⚡ ARCHIVE & RESET VOTES';
 }
 </script>
 </body>
