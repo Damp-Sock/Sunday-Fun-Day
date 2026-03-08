@@ -282,6 +282,13 @@ let selected = new Set();
 let hasVoted = false;
 
 window.addEventListener('DOMContentLoaded', () => {
+  // Check if already voted this session
+  if (localStorage.getItem('sf_voted') === 'true') {
+    hasVoted = true;
+    document.getElementById('voted-banner').innerHTML = '<span style="font-size:18px">✓</span> YOU HAVE ALREADY CAST YOUR VOTE THIS WEEK. SEE THE LIVE RESULTS BELOW.';
+    document.getElementById('voted-banner').classList.add('visible');
+  }
+
   if (APPS_SCRIPT_URL === "YOUR_APPS_SCRIPT_URL_HERE") {
     document.getElementById('config-notice').classList.add('visible');
     document.getElementById('connection-status').textContent = 'NOT CONFIGURED';
@@ -377,6 +384,7 @@ async function submitVote() {
   }
 
   hasVoted = true;
+  localStorage.setItem('sf_voted', 'true');
   btn.textContent = '✓ VOTE LOCKED';
   document.getElementById('voted-banner').classList.add('visible');
   updateUI();
@@ -483,7 +491,7 @@ async function doReset() {
       resultEl.className = 'admin-result ok';
       resultEl.textContent = '✓ VOTES ARCHIVED — FRESH POLL IS LIVE. INFORM THE SQUAD.';
       document.getElementById('reset-pin').value = '';
-      // Reload leaderboard to show empty state
+      localStorage.removeItem('sf_voted');
       loadLeaderboard();
     } else {
       resultEl.className = 'admin-result err';
