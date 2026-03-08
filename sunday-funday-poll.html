@@ -9,7 +9,6 @@
   :root {
     --green: #39ff14;
     --green-dim: #1a7a06;
-    --green-glow: rgba(57,255,20,0.18);
     --red: #ff3a3a;
     --amber: #ffb300;
     --bg: #080c08;
@@ -18,447 +17,112 @@
     --text: #c8e6c8;
     --muted: #4a7a4a;
   }
-
   * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'Barlow Condensed', sans-serif; min-height: 100vh; overflow-x: hidden; }
+  body::before { content: ''; position: fixed; inset: 0; background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(0,0,0,0.08) 2px, rgba(0,0,0,0.08) 4px); pointer-events: none; z-index: 1000; }
+  body::after { content: ''; position: fixed; inset: 0; background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.6) 100%); pointer-events: none; z-index: 999; }
 
-  body {
-    background: var(--bg);
-    color: var(--text);
-    font-family: 'Barlow Condensed', sans-serif;
-    min-height: 100vh;
-    overflow-x: hidden;
-  }
+  header { border-bottom: 2px solid var(--green-dim); padding: 28px 32px 20px; background: linear-gradient(180deg, rgba(57,255,20,0.04) 0%, transparent 100%); }
+  .header-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 16px; flex-wrap: wrap; }
+  .callsign { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--green-dim); letter-spacing: 3px; text-transform: uppercase; margin-bottom: 6px; }
+  h1 { font-size: clamp(36px, 6vw, 64px); font-weight: 900; letter-spacing: 4px; line-height: 0.9; color: var(--green); text-shadow: 0 0 30px rgba(57,255,20,0.5), 0 0 60px rgba(57,255,20,0.2); text-transform: uppercase; }
+  h1 span { color: var(--text); opacity: 0.5; }
+  .header-meta { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--muted); text-align: right; line-height: 1.8; }
+  .header-meta strong { color: var(--amber); }
+  .instruction-bar { margin-top: 16px; background: rgba(57,255,20,0.06); border: 1px solid var(--green-dim); padding: 10px 16px; display: flex; align-items: center; gap: 12px; font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--green); letter-spacing: 1px; flex-wrap: wrap; }
+  .pulse-dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 1.5s ease-in-out infinite; flex-shrink: 0; }
+  @keyframes pulse { 0%, 100% { opacity: 1; transform: scale(1); } 50% { opacity: 0.4; transform: scale(0.8); } }
+  .selection-counter { margin-left: auto; font-size: 14px; color: var(--amber); }
+  .selection-counter span { font-size: 22px; font-weight: 700; color: var(--green); }
 
-  /* Scanline overlay */
-  body::before {
-    content: '';
-    position: fixed; inset: 0;
-    background: repeating-linear-gradient(
-      0deg,
-      transparent,
-      transparent 2px,
-      rgba(0,0,0,0.08) 2px,
-      rgba(0,0,0,0.08) 4px
-    );
-    pointer-events: none;
-    z-index: 1000;
-  }
+  .config-notice { background: rgba(255,179,0,0.07); border: 1px solid rgba(255,179,0,0.4); padding: 14px 18px; margin: 16px 32px; font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--amber); letter-spacing: 1px; line-height: 1.8; display: none; }
+  .config-notice.visible { display: block; }
 
-  /* Subtle CRT vignette */
-  body::after {
-    content: '';
-    position: fixed; inset: 0;
-    background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.6) 100%);
-    pointer-events: none;
-    z-index: 999;
-  }
+  .tabs { display: flex; gap: 4px; padding: 20px 32px 0; border-bottom: 1px solid var(--border); }
+  .tab { font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 2px; padding: 10px 20px; cursor: pointer; border: 1px solid var(--border); background: transparent; color: var(--muted); text-transform: uppercase; border-bottom: none; transition: all 0.15s; position: relative; top: 1px; }
+  .tab:hover { color: var(--text); border-color: var(--muted); }
+  .tab.active { color: var(--green); border-color: var(--green-dim); background: rgba(57,255,20,0.04); border-bottom: 1px solid var(--bg); }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
 
-  header {
-    border-bottom: 2px solid var(--green-dim);
-    padding: 28px 32px 20px;
-    position: relative;
-    background: linear-gradient(180deg, rgba(57,255,20,0.04) 0%, transparent 100%);
-  }
-
-  .header-top {
-    display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    gap: 16px;
-    flex-wrap: wrap;
-  }
-
-  .callsign {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
-    color: var(--green-dim);
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    margin-bottom: 6px;
-  }
-
-  h1 {
-    font-size: clamp(36px, 6vw, 64px);
-    font-weight: 900;
-    letter-spacing: 4px;
-    line-height: 0.9;
-    color: var(--green);
-    text-shadow: 0 0 30px rgba(57,255,20,0.5), 0 0 60px rgba(57,255,20,0.2);
-    text-transform: uppercase;
-  }
-
-  h1 span {
-    color: var(--text);
-    opacity: 0.5;
-  }
-
-  .header-meta {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    text-align: right;
-    line-height: 1.8;
-  }
-
-  .header-meta strong {
-    color: var(--amber);
-  }
-
-  .instruction-bar {
-    margin-top: 16px;
-    background: rgba(57,255,20,0.06);
-    border: 1px solid var(--green-dim);
-    padding: 10px 16px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 12px;
-    color: var(--green);
-    letter-spacing: 1px;
-  }
-
-  .pulse-dot {
-    width: 8px; height: 8px;
-    border-radius: 50%;
-    background: var(--green);
-    box-shadow: 0 0 8px var(--green);
-    animation: pulse 1.5s ease-in-out infinite;
-    flex-shrink: 0;
-  }
-
-  @keyframes pulse {
-    0%, 100% { opacity: 1; transform: scale(1); }
-    50% { opacity: 0.4; transform: scale(0.8); }
-  }
-
-  .selection-counter {
-    margin-left: auto;
-    font-size: 14px;
-    color: var(--amber);
-  }
-
-  .selection-counter span {
-    font-size: 22px;
-    font-weight: 700;
-    color: var(--green);
-  }
-
-  .main {
-    padding: 24px 32px 32px;
-    max-width: 1100px;
-    margin: 0 auto;
-  }
-
-  .section-label {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 4px;
-    color: var(--muted);
-    text-transform: uppercase;
-    margin: 28px 0 12px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-  }
-
-  .section-label::after {
-    content: '';
-    flex: 1;
-    height: 1px;
-    background: var(--border);
-  }
-
+  .main { padding: 24px 32px 32px; max-width: 1100px; margin: 0 auto; }
+  .section-label { font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 4px; color: var(--muted); text-transform: uppercase; margin: 28px 0 12px; display: flex; align-items: center; gap: 12px; }
+  .section-label::after { content: ''; flex: 1; height: 1px; background: var(--border); }
   .section-label.specials { color: var(--amber); }
   .section-label.upcoming { color: #4af; }
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 10px; }
 
-  .grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-    gap: 10px;
-  }
+  .mission-card { border: 1px solid var(--border); background: var(--panel); padding: 14px 16px; cursor: pointer; transition: all 0.15s ease; position: relative; overflow: hidden; user-select: none; }
+  .mission-card::before { content: ''; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--border); transition: all 0.15s ease; }
+  .mission-card:hover { border-color: var(--green-dim); background: rgba(57,255,20,0.04); }
+  .mission-card:hover::before { background: var(--green-dim); }
+  .mission-card.selected { border-color: var(--green); background: rgba(57,255,20,0.08); box-shadow: 0 0 20px rgba(57,255,20,0.1); }
+  .mission-card.selected::before { background: var(--green); box-shadow: 0 0 8px var(--green); }
+  .mission-card.maxed:not(.selected) { opacity: 0.4; cursor: not-allowed; }
+  .mission-card.maxed:not(.selected):hover { border-color: var(--border); background: var(--panel); }
+  .mission-card.maxed:not(.selected)::before { background: var(--border); }
 
-  .mission-card {
-    border: 1px solid var(--border);
-    background: var(--panel);
-    padding: 14px 16px;
-    cursor: pointer;
-    transition: all 0.15s ease;
-    position: relative;
-    overflow: hidden;
-    user-select: none;
-  }
-
-  .mission-card::before {
-    content: '';
-    position: absolute;
-    left: 0; top: 0; bottom: 0;
-    width: 3px;
-    background: var(--border);
-    transition: all 0.15s ease;
-  }
-
-  .mission-card:hover {
-    border-color: var(--green-dim);
-    background: rgba(57,255,20,0.04);
-  }
-
-  .mission-card:hover::before {
-    background: var(--green-dim);
-  }
-
-  .mission-card.selected {
-    border-color: var(--green);
-    background: rgba(57,255,20,0.08);
-    box-shadow: 0 0 20px rgba(57,255,20,0.1), inset 0 0 20px rgba(57,255,20,0.03);
-  }
-
-  .mission-card.selected::before {
-    background: var(--green);
-    box-shadow: 0 0 8px var(--green);
-  }
-
-  .mission-card.maxed:not(.selected) {
-    opacity: 0.4;
-    cursor: not-allowed;
-  }
-
-  .mission-card.maxed:not(.selected):hover {
-    border-color: var(--border);
-    background: var(--panel);
-  }
-
-  .mission-card.maxed:not(.selected)::before {
-    background: var(--border);
-  }
-
-  .card-header {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    margin-bottom: 6px;
-  }
-
-  .check-box {
-    width: 16px; height: 16px;
-    border: 1px solid var(--border);
-    flex-shrink: 0;
-    margin-top: 2px;
-    position: relative;
-    transition: all 0.15s;
-  }
-
-  .selected .check-box {
-    border-color: var(--green);
-    background: rgba(57,255,20,0.2);
-  }
-
-  .selected .check-box::after {
-    content: '✓';
-    position: absolute;
-    inset: 0;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: 10px;
-    color: var(--green);
-    text-shadow: 0 0 6px var(--green);
-  }
-
-  .mission-name {
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 1px;
-    color: var(--text);
-    line-height: 1.2;
-    text-transform: uppercase;
-  }
-
-  .selected .mission-name {
-    color: var(--green);
-    text-shadow: 0 0 12px rgba(57,255,20,0.4);
-  }
-
-  .mission-type-badge {
-    display: inline-block;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 9px;
-    padding: 2px 6px;
-    letter-spacing: 1px;
-    margin-bottom: 6px;
-    border-radius: 1px;
-  }
-
+  .card-header { display: flex; align-items: flex-start; gap: 10px; margin-bottom: 6px; }
+  .check-box { width: 16px; height: 16px; border: 1px solid var(--border); flex-shrink: 0; margin-top: 2px; position: relative; transition: all 0.15s; }
+  .selected .check-box { border-color: var(--green); background: rgba(57,255,20,0.2); }
+  .selected .check-box::after { content: '✓'; position: absolute; inset: 0; display: flex; align-items: center; justify-content: center; font-size: 10px; color: var(--green); }
+  .mission-name { font-size: 16px; font-weight: 700; letter-spacing: 1px; color: var(--text); line-height: 1.2; text-transform: uppercase; }
+  .selected .mission-name { color: var(--green); text-shadow: 0 0 12px rgba(57,255,20,0.4); }
+  .mission-type-badge { display: inline-block; font-family: 'Share Tech Mono', monospace; font-size: 9px; padding: 2px 6px; letter-spacing: 1px; margin-bottom: 6px; border-radius: 1px; }
   .badge-pvp { background: rgba(255,58,58,0.15); color: var(--red); border: 1px solid rgba(255,58,58,0.3); }
   .badge-pve { background: rgba(57,255,20,0.1); color: var(--green-dim); border: 1px solid rgba(57,255,20,0.2); }
   .badge-skill { background: rgba(255,179,0,0.1); color: var(--amber); border: 1px solid rgba(255,179,0,0.25); }
   .badge-special { background: rgba(100,160,255,0.1); color: #6af; border: 1px solid rgba(100,160,255,0.25); }
+  .mission-desc { font-size: 12px; color: var(--muted); line-height: 1.5; font-family: 'Share Tech Mono', monospace; }
+  .mission-author { margin-top: 8px; font-family: 'Share Tech Mono', monospace; font-size: 9px; color: rgba(74,122,74,0.7); letter-spacing: 1px; }
 
-  .mission-desc {
-    font-size: 12px;
-    color: var(--muted);
-    line-height: 1.5;
-    font-family: 'Share Tech Mono', monospace;
-  }
-
-  .mission-author {
-    margin-top: 8px;
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 9px;
-    color: rgba(74,122,74,0.7);
-    letter-spacing: 1px;
-  }
-
-  .action-bar {
-    margin-top: 32px;
-    display: flex;
-    gap: 12px;
-    align-items: center;
-    flex-wrap: wrap;
-  }
-
-  .btn-submit {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: 3px;
-    text-transform: uppercase;
-    background: var(--green);
-    color: #050d05;
-    border: none;
-    padding: 14px 40px;
-    cursor: pointer;
-    transition: all 0.15s;
-    position: relative;
-    overflow: hidden;
-  }
-
-  .btn-submit:hover:not(:disabled) {
-    background: #5fff30;
-    box-shadow: 0 0 30px rgba(57,255,20,0.4);
-  }
-
-  .btn-submit:disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-  }
-
-  .btn-reset {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 2px;
-    text-transform: uppercase;
-    background: transparent;
-    color: var(--muted);
-    border: 1px solid var(--border);
-    padding: 14px 24px;
-    cursor: pointer;
-    transition: all 0.15s;
-  }
-
+  .action-bar { margin-top: 32px; display: flex; gap: 12px; align-items: center; flex-wrap: wrap; }
+  .btn-submit { font-family: 'Barlow Condensed', sans-serif; font-size: 18px; font-weight: 700; letter-spacing: 3px; text-transform: uppercase; background: var(--green); color: #050d05; border: none; padding: 14px 40px; cursor: pointer; transition: all 0.15s; }
+  .btn-submit:hover:not(:disabled) { background: #5fff30; box-shadow: 0 0 30px rgba(57,255,20,0.4); }
+  .btn-submit:disabled { opacity: 0.3; cursor: not-allowed; }
+  .btn-reset { font-family: 'Share Tech Mono', monospace; font-size: 11px; letter-spacing: 2px; text-transform: uppercase; background: transparent; color: var(--muted); border: 1px solid var(--border); padding: 14px 24px; cursor: pointer; transition: all 0.15s; }
   .btn-reset:hover { color: var(--text); border-color: var(--muted); }
 
-  /* Results panel */
-  .results-panel {
-    display: none;
-    margin-top: 32px;
-    border: 1px solid var(--green-dim);
-    background: rgba(57,255,20,0.03);
-    padding: 24px;
-    animation: fadeIn 0.3s ease;
-  }
+  .voted-banner { display: none; background: rgba(57,255,20,0.08); border: 1px solid var(--green); padding: 16px 20px; margin-bottom: 20px; font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--green); letter-spacing: 2px; }
+  .voted-banner.visible { display: flex; align-items: center; gap: 12px; animation: fadeIn 0.3s ease; }
+  @keyframes fadeIn { from { opacity: 0; transform: translateY(-6px); } to { opacity: 1; transform: translateY(0); } }
 
-  @keyframes fadeIn {
-    from { opacity: 0; transform: translateY(8px); }
-    to { opacity: 1; transform: translateY(0); }
-  }
-
-  .results-panel.visible { display: block; }
-
-  .results-title {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
-    letter-spacing: 4px;
-    color: var(--green);
-    text-transform: uppercase;
-    margin-bottom: 20px;
-  }
-
-  .result-item {
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    margin-bottom: 10px;
-    font-size: 15px;
-    font-weight: 600;
-    letter-spacing: 1px;
-    text-transform: uppercase;
-  }
-
-  .result-num {
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 20px;
-    color: var(--green);
-    width: 28px;
-    text-align: right;
-    flex-shrink: 0;
-  }
-
-  .result-bar-wrap {
-    flex: 1;
-    height: 8px;
-    background: var(--border);
-    position: relative;
-    overflow: hidden;
-  }
-
-  .result-bar {
-    height: 100%;
-    background: var(--green);
-    box-shadow: 0 0 10px rgba(57,255,20,0.5);
-    transition: width 0.6s ease;
-  }
-
-  .share-section {
-    margin-top: 20px;
-    padding-top: 16px;
-    border-top: 1px solid var(--border);
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 11px;
-    color: var(--muted);
-    letter-spacing: 1px;
-  }
-
-  .share-text {
-    background: var(--bg);
-    border: 1px solid var(--border);
-    padding: 10px 14px;
-    margin-top: 10px;
-    color: var(--green);
-    font-size: 12px;
-    line-height: 1.8;
-    white-space: pre-wrap;
-    cursor: pointer;
-    transition: border-color 0.15s;
-  }
-
-  .share-text:hover { border-color: var(--green-dim); }
-
-  .copy-hint {
-    font-size: 9px;
-    color: var(--green-dim);
-    margin-top: 6px;
-    letter-spacing: 2px;
-  }
-
-  .copied-flash {
-    color: var(--green);
-    font-size: 11px;
-    animation: fadeIn 0.2s ease;
-  }
+  /* Leaderboard */
+  .lb-header { font-family: 'Share Tech Mono', monospace; font-size: 10px; letter-spacing: 3px; color: var(--muted); text-transform: uppercase; margin-bottom: 16px; display: flex; justify-content: space-between; align-items: center; }
+  .lb-refresh { font-size: 10px; color: var(--green-dim); cursor: pointer; letter-spacing: 2px; border: 1px solid var(--green-dim); padding: 6px 12px; transition: all 0.15s; background: transparent; font-family: 'Share Tech Mono', monospace; }
+  .lb-refresh:hover { color: var(--green); border-color: var(--green); }
+  .lb-item { display: flex; align-items: center; gap: 12px; padding: 10px 14px; margin-bottom: 6px; border: 1px solid var(--border); background: var(--panel); transition: all 0.3s ease; }
+  .lb-item.top1 { border-color: var(--green); background: rgba(57,255,20,0.06); }
+  .lb-item.top2 { border-color: rgba(57,255,20,0.4); }
+  .lb-item.top3 { border-color: rgba(57,255,20,0.2); }
+  .lb-rank { font-family: 'Share Tech Mono', monospace; font-size: 18px; color: var(--muted); width: 32px; text-align: right; flex-shrink: 0; }
+  .lb-item.top1 .lb-rank { color: var(--green); text-shadow: 0 0 10px var(--green); }
+  .lb-item.top2 .lb-rank { color: var(--amber); }
+  .lb-item.top3 .lb-rank { color: #c0b060; }
+  .lb-name { flex: 1; font-size: 15px; font-weight: 700; letter-spacing: 1px; text-transform: uppercase; }
+  .lb-item.top1 .lb-name { color: var(--green); }
+  .lb-bar-wrap { width: 160px; height: 6px; background: var(--border); flex-shrink: 0; }
+  .lb-bar { height: 100%; background: var(--green-dim); transition: width 0.6s ease; }
+  .lb-item.top1 .lb-bar { background: var(--green); box-shadow: 0 0 8px rgba(57,255,20,0.5); }
+  .lb-count { font-family: 'Share Tech Mono', monospace; font-size: 16px; color: var(--green); width: 36px; text-align: right; flex-shrink: 0; }
+  .lb-votes-label { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: var(--muted); }
+  .lb-empty { font-family: 'Share Tech Mono', monospace; font-size: 12px; color: var(--muted); padding: 40px; text-align: center; letter-spacing: 2px; }
+  .status-bar { font-family: 'Share Tech Mono', monospace; font-size: 10px; color: var(--muted); padding: 10px 0; letter-spacing: 2px; }
+  .status-bar.error { color: var(--red); }
+  .status-bar.ok { color: var(--green-dim); }
+  .total-votes { font-family: 'Share Tech Mono', monospace; font-size: 11px; color: var(--amber); margin-bottom: 16px; letter-spacing: 2px; }
 </style>
 </head>
 <body>
+
+<script>
+  // ⚙️ PASTE YOUR APPS SCRIPT DEPLOYMENT URL HERE:
+  const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbwWqrxK7QyFKRyGDLUbvx5RXm2FLj0Br28LWIi4kKSC6vvEj6ulhyp419Yu0U05_MzHjA/exec";
+</script>
+
+<div id="config-notice" class="config-notice">
+  ⚠ BACKEND NOT CONFIGURED — Paste your Google Apps Script Web App URL into the APPS_SCRIPT_URL variable at the top of this file.
+</div>
 
 <header>
   <div class="header-top">
@@ -469,44 +133,60 @@
     <div class="header-meta">
       <div>CLASSIFICATION: <strong>OPEN</strong></div>
       <div>SELECT: <strong>3 MISSIONS MAX</strong></div>
-      <div>MISSION POOL: <strong id="total-count">—</strong></div>
-      <div>STATUS: <strong style="color:var(--green)">POLLING ACTIVE</strong></div>
+      <div>TOTAL MISSIONS: <strong>33</strong></div>
+      <div>BACKEND: <strong id="connection-status" style="color:var(--amber)">CHECKING...</strong></div>
     </div>
   </div>
   <div class="instruction-bar">
     <div class="pulse-dot"></div>
-    CHOOSE YOUR TOP 3 MISSIONS FOR SUNDAY FUNDAY — CAST YOUR VOTE BELOW
+    CHOOSE YOUR TOP 3 MISSIONS — ALL VOTES ARE TALLIED LIVE ACROSS THE ENTIRE SQUAD
     <div class="selection-counter"><span id="sel-count">0</span> / 3 SELECTED</div>
   </div>
 </header>
 
-<div class="main">
+<div class="tabs">
+  <button class="tab active" onclick="switchTab('vote')">▶ CAST VOTE</button>
+  <button class="tab" onclick="switchTab('leaderboard')">📊 LIVE RESULTS</button>
+</div>
 
-  <div class="section-label">REGULAR MISSIONS</div>
-  <div class="grid" id="grid-regular"></div>
+<!-- VOTE TAB -->
+<div id="tab-vote" class="tab-content active">
+  <div class="main">
+    <div id="voted-banner" class="voted-banner">
+      <span style="font-size:18px">✓</span>
+      VOTE LOCKED IN — REDIRECTING TO LIVE RESULTS...
+    </div>
 
-  <div class="section-label specials">SPECIAL EVENTS</div>
-  <div class="grid" id="grid-specials"></div>
+    <div class="section-label">REGULAR MISSIONS</div>
+    <div class="grid" id="grid-regular"></div>
 
-  <div class="section-label upcoming">UPCOMING</div>
-  <div class="grid" id="grid-upcoming"></div>
+    <div class="section-label specials">SPECIAL EVENTS</div>
+    <div class="grid" id="grid-specials"></div>
 
-  <div class="action-bar">
-    <button class="btn-submit" id="btn-submit" disabled onclick="submitVote()">▶ LOCK IN VOTE</button>
-    <button class="btn-reset" onclick="resetVote()">RESET</button>
-    <span id="submit-hint" style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;"></span>
-  </div>
+    <div class="section-label upcoming">UPCOMING</div>
+    <div class="grid" id="grid-upcoming"></div>
 
-  <div class="results-panel" id="results-panel">
-    <div class="results-title">// VOTE LOCKED — YOUR PICKS //</div>
-    <div id="results-list"></div>
-    <div class="share-section">
-      COPY FOR DISCORD:
-      <div class="share-text" id="share-text" onclick="copyShare()"></div>
-      <div class="copy-hint" id="copy-hint">▲ CLICK TO COPY TO CLIPBOARD</div>
+    <div class="action-bar">
+      <button class="btn-submit" id="btn-submit" disabled onclick="submitVote()">▶ LOCK IN VOTE</button>
+      <button class="btn-reset" onclick="resetVote()">RESET</button>
+      <span id="submit-hint" style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;"></span>
     </div>
   </div>
+</div>
 
+<!-- LEADERBOARD TAB -->
+<div id="tab-leaderboard" class="tab-content">
+  <div class="main">
+    <div class="lb-header">
+      <span>// MISSION VOTE STANDINGS //</span>
+      <button class="lb-refresh" onclick="loadLeaderboard()">↺ REFRESH</button>
+    </div>
+    <div id="total-votes-display" class="total-votes"></div>
+    <div id="leaderboard-list">
+      <div class="lb-empty">LOADING...</div>
+    </div>
+    <div class="status-bar" id="lb-status"></div>
+  </div>
 </div>
 
 <script>
@@ -554,48 +234,63 @@ const missions = {
 
 const MAX = 3;
 let selected = new Set();
+let hasVoted = false;
+
+window.addEventListener('DOMContentLoaded', () => {
+  if (APPS_SCRIPT_URL === "YOUR_APPS_SCRIPT_URL_HERE") {
+    document.getElementById('config-notice').classList.add('visible');
+    document.getElementById('connection-status').textContent = 'NOT CONFIGURED';
+  } else {
+    checkConnection();
+    loadLeaderboard();
+    setInterval(() => {
+      if (document.getElementById('tab-leaderboard').classList.contains('active')) loadLeaderboard();
+    }, 30000);
+  }
+  renderGrid(missions.regular, 'grid-regular');
+  renderGrid(missions.specials, 'grid-specials');
+  renderGrid(missions.upcoming, 'grid-upcoming');
+  updateUI();
+});
+
+function switchTab(name) {
+  document.querySelectorAll('.tab, .tab-content').forEach(el => el.classList.remove('active'));
+  document.querySelector(`.tab[onclick="switchTab('${name}')"]`).classList.add('active');
+  document.getElementById(`tab-${name}`).classList.add('active');
+  if (name === 'leaderboard') loadLeaderboard();
+}
 
 function getBadge(type) {
-  const map = {
-    pvp: ['badge-pvp', 'PVP'],
-    pve: ['badge-pve', 'PVE'],
-    skill: ['badge-skill', 'COMPETITION'],
-    special: ['badge-special', 'SPECIAL EVENT'],
-  };
+  const map = { pvp:['badge-pvp','PVP'], pve:['badge-pve','PVE'], skill:['badge-skill','COMPETITION'], special:['badge-special','SPECIAL EVENT'] };
   const [cls, label] = map[type] || ['badge-pve', type.toUpperCase()];
   return `<span class="mission-type-badge ${cls}">${label}</span>`;
 }
 
-function renderGrid(missions, containerId) {
-  const container = document.getElementById(containerId);
-  missions.forEach((m, i) => {
-    const id = `${containerId}-${i}`;
+function renderGrid(list, id) {
+  const container = document.getElementById(id);
+  list.forEach((m, i) => {
     const card = document.createElement('div');
     card.className = 'mission-card';
-    card.dataset.id = id;
+    card.dataset.id = `${id}-${i}`;
     card.dataset.name = m.name;
     card.innerHTML = `
-      <div class="card-header">
-        <div class="check-box"></div>
-        <div class="mission-name">${m.name}</div>
-      </div>
+      <div class="card-header"><div class="check-box"></div><div class="mission-name">${m.name}</div></div>
       ${getBadge(m.type)}
       <div class="mission-desc">${m.desc}</div>
       <div class="mission-author">// ${m.author}</div>
     `;
-    card.addEventListener('click', () => toggleCard(card, id));
+    card.addEventListener('click', () => toggleCard(card, card.dataset.id));
     container.appendChild(card);
   });
 }
 
 function toggleCard(card, id) {
+  if (hasVoted) return;
   if (card.classList.contains('selected')) {
-    card.classList.remove('selected');
-    selected.delete(id);
+    card.classList.remove('selected'); selected.delete(id);
   } else {
     if (selected.size >= MAX) return;
-    card.classList.add('selected');
-    selected.add(id);
+    card.classList.add('selected'); selected.add(id);
   }
   updateUI();
 }
@@ -604,78 +299,117 @@ function updateUI() {
   const count = selected.size;
   document.getElementById('sel-count').textContent = count;
   const btn = document.getElementById('btn-submit');
-  btn.disabled = count === 0;
-
+  btn.disabled = count === 0 || hasVoted;
   const hint = document.getElementById('submit-hint');
-  if (count === 0) hint.textContent = 'SELECT AT LEAST 1 MISSION';
+  if (hasVoted) hint.textContent = 'VOTE ALREADY CAST';
+  else if (count === 0) hint.textContent = 'SELECT AT LEAST 1 MISSION';
   else if (count < MAX) hint.textContent = `YOU CAN STILL PICK ${MAX - count} MORE`;
   else hint.textContent = 'MAX SELECTIONS REACHED';
-
-  // Dim unselected cards at max
   document.querySelectorAll('.mission-card').forEach(c => {
-    if (count >= MAX && !c.classList.contains('selected')) {
-      c.classList.add('maxed');
-    } else {
-      c.classList.remove('maxed');
-    }
+    if ((hasVoted || count >= MAX) && !c.classList.contains('selected')) c.classList.add('maxed');
+    else c.classList.remove('maxed');
   });
 }
 
-function submitVote() {
-  const picks = [];
-  document.querySelectorAll('.mission-card.selected').forEach(c => {
-    picks.push(c.dataset.name);
-  });
+async function submitVote() {
+  const picks = [...document.querySelectorAll('.mission-card.selected')].map(c => c.dataset.name);
+  if (!picks.length) return;
+  const btn = document.getElementById('btn-submit');
+  btn.textContent = '⏳ TRANSMITTING...';
+  btn.disabled = true;
 
-  const resultsList = document.getElementById('results-list');
-  resultsList.innerHTML = picks.map((name, i) => `
-    <div class="result-item">
-      <div class="result-num">${i + 1}.</div>
-      <div style="flex:1">${name}</div>
-      <div class="result-bar-wrap" style="max-width:120px">
-        <div class="result-bar" style="width:${100 - i * 20}%"></div>
-      </div>
-    </div>
-  `).join('');
+  if (APPS_SCRIPT_URL !== "YOUR_APPS_SCRIPT_URL_HERE") {
+    try {
+      await fetch(APPS_SCRIPT_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'text/plain' },
+        body: JSON.stringify({ votes: picks }),
+        mode: 'no-cors'
+      });
+    } catch (err) {
+      console.error('Vote submit error:', err);
+    }
+  }
 
-  const shareText = `🎯 SUNDAY FUNDAY PICKS:\n${picks.map((n, i) => `${i + 1}. ${n}`).join('\n')}`;
-  document.getElementById('share-text').textContent = shareText;
-
-  document.getElementById('results-panel').classList.add('visible');
-  document.getElementById('btn-submit').disabled = true;
-  document.getElementById('btn-submit').textContent = '✓ VOTE LOCKED';
-
-  document.getElementById('results-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  hasVoted = true;
+  btn.textContent = '✓ VOTE LOCKED';
+  document.getElementById('voted-banner').classList.add('visible');
+  updateUI();
+  setTimeout(() => switchTab('leaderboard'), 2000);
 }
 
 function resetVote() {
+  if (hasVoted) return;
   selected.clear();
-  document.querySelectorAll('.mission-card').forEach(c => {
-    c.classList.remove('selected', 'maxed');
-  });
-  document.getElementById('results-panel').classList.remove('visible');
-  document.getElementById('btn-submit').textContent = '▶ LOCK IN VOTE';
+  document.querySelectorAll('.mission-card').forEach(c => c.classList.remove('selected', 'maxed'));
   updateUI();
 }
 
-function copyShare() {
-  const text = document.getElementById('share-text').textContent;
-  navigator.clipboard.writeText(text).then(() => {
-    const hint = document.getElementById('copy-hint');
-    hint.innerHTML = '<span class="copied-flash">✓ COPIED TO CLIPBOARD</span>';
-    setTimeout(() => { hint.textContent = '▲ CLICK TO COPY TO CLIPBOARD'; }, 2000);
-  });
+async function loadLeaderboard() {
+  const container = document.getElementById('leaderboard-list');
+  const status = document.getElementById('lb-status');
+  status.textContent = '⏳ FETCHING DATA...';
+  status.className = 'status-bar';
+
+  if (APPS_SCRIPT_URL === "YOUR_APPS_SCRIPT_URL_HERE") {
+    container.innerHTML = '<div class="lb-empty">BACKEND NOT CONFIGURED</div>';
+    status.textContent = '⚠ PASTE YOUR APPS SCRIPT URL TO ENABLE LIVE TALLIES';
+    status.className = 'status-bar error';
+    return;
+  }
+
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, { cache: 'no-store' });
+    const tallies = await res.json();
+    renderLeaderboard(tallies);
+    status.textContent = `✓ UPDATED: ${new Date().toLocaleTimeString()}`;
+    status.className = 'status-bar ok';
+  } catch (err) {
+    status.textContent = '✗ FETCH FAILED — CHECK CONNECTION OR APPS SCRIPT PERMISSIONS';
+    status.className = 'status-bar error';
+  }
 }
 
-// Init
-renderGrid(missions.regular, 'grid-regular');
-renderGrid(missions.specials, 'grid-specials');
-renderGrid(missions.upcoming, 'grid-upcoming');
+function renderLeaderboard(tallies) {
+  const container = document.getElementById('leaderboard-list');
+  const totalDisplay = document.getElementById('total-votes-display');
+  const entries = Object.entries(tallies).sort((a, b) => b[1] - a[1]);
 
-const total = missions.regular.length + missions.specials.length + missions.upcoming.length;
-document.getElementById('total-count').textContent = total;
+  if (!entries.length) {
+    container.innerHTML = '<div class="lb-empty">NO VOTES CAST YET — BE THE FIRST TO VOTE!</div>';
+    totalDisplay.textContent = '';
+    return;
+  }
 
-updateUI();
+  const totalVotes = entries.reduce((sum, [, v]) => sum + v, 0);
+  totalDisplay.textContent = `TOTAL VOTES CAST: ${totalVotes}`;
+
+  const maxVotes = entries[0][1] || 1;
+  container.innerHTML = entries.map(([name, count], i) => {
+    const rankClass = i === 0 ? 'top1' : i === 1 ? 'top2' : i === 2 ? 'top3' : '';
+    const barWidth = Math.round((count / maxVotes) * 100);
+    return `
+      <div class="lb-item ${rankClass}">
+        <div class="lb-rank">${i + 1}.</div>
+        <div class="lb-name">${name}</div>
+        <div class="lb-bar-wrap"><div class="lb-bar" style="width:${barWidth}%"></div></div>
+        <div class="lb-count">${count}</div>
+        <div class="lb-votes-label">VOTES</div>
+      </div>
+    `;
+  }).join('');
+}
+
+async function checkConnection() {
+  const statusEl = document.getElementById('connection-status');
+  try {
+    const res = await fetch(APPS_SCRIPT_URL, { cache: 'no-store' });
+    if (res.ok) { statusEl.textContent = 'LIVE'; statusEl.style.color = 'var(--green)'; }
+    else { statusEl.textContent = 'ERROR'; statusEl.style.color = 'var(--red)'; }
+  } catch {
+    statusEl.textContent = 'OFFLINE'; statusEl.style.color = 'var(--red)';
+  }
+}
 </script>
 </body>
 </html>
