@@ -1,0 +1,681 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SUNDAY FUNDAY // MISSION VOTE</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Barlow+Condensed:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green: #39ff14;
+    --green-dim: #1a7a06;
+    --green-glow: rgba(57,255,20,0.18);
+    --red: #ff3a3a;
+    --amber: #ffb300;
+    --bg: #080c08;
+    --panel: #0d130d;
+    --border: #1e3a1e;
+    --text: #c8e6c8;
+    --muted: #4a7a4a;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Barlow Condensed', sans-serif;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Scanline overlay */
+  body::before {
+    content: '';
+    position: fixed; inset: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0,0,0,0.08) 2px,
+      rgba(0,0,0,0.08) 4px
+    );
+    pointer-events: none;
+    z-index: 1000;
+  }
+
+  /* Subtle CRT vignette */
+  body::after {
+    content: '';
+    position: fixed; inset: 0;
+    background: radial-gradient(ellipse at center, transparent 60%, rgba(0,0,0,0.6) 100%);
+    pointer-events: none;
+    z-index: 999;
+  }
+
+  header {
+    border-bottom: 2px solid var(--green-dim);
+    padding: 28px 32px 20px;
+    position: relative;
+    background: linear-gradient(180deg, rgba(57,255,20,0.04) 0%, transparent 100%);
+  }
+
+  .header-top {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    flex-wrap: wrap;
+  }
+
+  .callsign {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--green-dim);
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    margin-bottom: 6px;
+  }
+
+  h1 {
+    font-size: clamp(36px, 6vw, 64px);
+    font-weight: 900;
+    letter-spacing: 4px;
+    line-height: 0.9;
+    color: var(--green);
+    text-shadow: 0 0 30px rgba(57,255,20,0.5), 0 0 60px rgba(57,255,20,0.2);
+    text-transform: uppercase;
+  }
+
+  h1 span {
+    color: var(--text);
+    opacity: 0.5;
+  }
+
+  .header-meta {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    text-align: right;
+    line-height: 1.8;
+  }
+
+  .header-meta strong {
+    color: var(--amber);
+  }
+
+  .instruction-bar {
+    margin-top: 16px;
+    background: rgba(57,255,20,0.06);
+    border: 1px solid var(--green-dim);
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    color: var(--green);
+    letter-spacing: 1px;
+  }
+
+  .pulse-dot {
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+    animation: pulse 1.5s ease-in-out infinite;
+    flex-shrink: 0;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  .selection-counter {
+    margin-left: auto;
+    font-size: 14px;
+    color: var(--amber);
+  }
+
+  .selection-counter span {
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--green);
+  }
+
+  .main {
+    padding: 24px 32px 32px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 4px;
+    color: var(--muted);
+    text-transform: uppercase;
+    margin: 28px 0 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .section-label::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  .section-label.specials { color: var(--amber); }
+  .section-label.upcoming { color: #4af; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 10px;
+  }
+
+  .mission-card {
+    border: 1px solid var(--border);
+    background: var(--panel);
+    padding: 14px 16px;
+    cursor: pointer;
+    transition: all 0.15s ease;
+    position: relative;
+    overflow: hidden;
+    user-select: none;
+  }
+
+  .mission-card::before {
+    content: '';
+    position: absolute;
+    left: 0; top: 0; bottom: 0;
+    width: 3px;
+    background: var(--border);
+    transition: all 0.15s ease;
+  }
+
+  .mission-card:hover {
+    border-color: var(--green-dim);
+    background: rgba(57,255,20,0.04);
+  }
+
+  .mission-card:hover::before {
+    background: var(--green-dim);
+  }
+
+  .mission-card.selected {
+    border-color: var(--green);
+    background: rgba(57,255,20,0.08);
+    box-shadow: 0 0 20px rgba(57,255,20,0.1), inset 0 0 20px rgba(57,255,20,0.03);
+  }
+
+  .mission-card.selected::before {
+    background: var(--green);
+    box-shadow: 0 0 8px var(--green);
+  }
+
+  .mission-card.maxed:not(.selected) {
+    opacity: 0.4;
+    cursor: not-allowed;
+  }
+
+  .mission-card.maxed:not(.selected):hover {
+    border-color: var(--border);
+    background: var(--panel);
+  }
+
+  .mission-card.maxed:not(.selected)::before {
+    background: var(--border);
+  }
+
+  .card-header {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 6px;
+  }
+
+  .check-box {
+    width: 16px; height: 16px;
+    border: 1px solid var(--border);
+    flex-shrink: 0;
+    margin-top: 2px;
+    position: relative;
+    transition: all 0.15s;
+  }
+
+  .selected .check-box {
+    border-color: var(--green);
+    background: rgba(57,255,20,0.2);
+  }
+
+  .selected .check-box::after {
+    content: '✓';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    color: var(--green);
+    text-shadow: 0 0 6px var(--green);
+  }
+
+  .mission-name {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 1px;
+    color: var(--text);
+    line-height: 1.2;
+    text-transform: uppercase;
+  }
+
+  .selected .mission-name {
+    color: var(--green);
+    text-shadow: 0 0 12px rgba(57,255,20,0.4);
+  }
+
+  .mission-type-badge {
+    display: inline-block;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    padding: 2px 6px;
+    letter-spacing: 1px;
+    margin-bottom: 6px;
+    border-radius: 1px;
+  }
+
+  .badge-pvp { background: rgba(255,58,58,0.15); color: var(--red); border: 1px solid rgba(255,58,58,0.3); }
+  .badge-pve { background: rgba(57,255,20,0.1); color: var(--green-dim); border: 1px solid rgba(57,255,20,0.2); }
+  .badge-skill { background: rgba(255,179,0,0.1); color: var(--amber); border: 1px solid rgba(255,179,0,0.25); }
+  .badge-special { background: rgba(100,160,255,0.1); color: #6af; border: 1px solid rgba(100,160,255,0.25); }
+
+  .mission-desc {
+    font-size: 12px;
+    color: var(--muted);
+    line-height: 1.5;
+    font-family: 'Share Tech Mono', monospace;
+  }
+
+  .mission-author {
+    margin-top: 8px;
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 9px;
+    color: rgba(74,122,74,0.7);
+    letter-spacing: 1px;
+  }
+
+  .action-bar {
+    margin-top: 32px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .btn-submit {
+    font-family: 'Barlow Condensed', sans-serif;
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    background: var(--green);
+    color: #050d05;
+    border: none;
+    padding: 14px 40px;
+    cursor: pointer;
+    transition: all 0.15s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-submit:hover:not(:disabled) {
+    background: #5fff30;
+    box-shadow: 0 0 30px rgba(57,255,20,0.4);
+  }
+
+  .btn-submit:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+  }
+
+  .btn-reset {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    background: transparent;
+    color: var(--muted);
+    border: 1px solid var(--border);
+    padding: 14px 24px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+
+  .btn-reset:hover { color: var(--text); border-color: var(--muted); }
+
+  /* Results panel */
+  .results-panel {
+    display: none;
+    margin-top: 32px;
+    border: 1px solid var(--green-dim);
+    background: rgba(57,255,20,0.03);
+    padding: 24px;
+    animation: fadeIn 0.3s ease;
+  }
+
+  @keyframes fadeIn {
+    from { opacity: 0; transform: translateY(8px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .results-panel.visible { display: block; }
+
+  .results-title {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 4px;
+    color: var(--green);
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+
+  .result-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 10px;
+    font-size: 15px;
+    font-weight: 600;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+  }
+
+  .result-num {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 20px;
+    color: var(--green);
+    width: 28px;
+    text-align: right;
+    flex-shrink: 0;
+  }
+
+  .result-bar-wrap {
+    flex: 1;
+    height: 8px;
+    background: var(--border);
+    position: relative;
+    overflow: hidden;
+  }
+
+  .result-bar {
+    height: 100%;
+    background: var(--green);
+    box-shadow: 0 0 10px rgba(57,255,20,0.5);
+    transition: width 0.6s ease;
+  }
+
+  .share-section {
+    margin-top: 20px;
+    padding-top: 16px;
+    border-top: 1px solid var(--border);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    color: var(--muted);
+    letter-spacing: 1px;
+  }
+
+  .share-text {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+    margin-top: 10px;
+    color: var(--green);
+    font-size: 12px;
+    line-height: 1.8;
+    white-space: pre-wrap;
+    cursor: pointer;
+    transition: border-color 0.15s;
+  }
+
+  .share-text:hover { border-color: var(--green-dim); }
+
+  .copy-hint {
+    font-size: 9px;
+    color: var(--green-dim);
+    margin-top: 6px;
+    letter-spacing: 2px;
+  }
+
+  .copied-flash {
+    color: var(--green);
+    font-size: 11px;
+    animation: fadeIn 0.2s ease;
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-top">
+    <div>
+      <div class="callsign">GRIM REAPERS // DCS WORLD // COMMS CHANNEL OPEN</div>
+      <h1>SUNDAY<br><span>//</span> FUNDAY</h1>
+    </div>
+    <div class="header-meta">
+      <div>CLASSIFICATION: <strong>OPEN</strong></div>
+      <div>SELECT: <strong>3 MISSIONS MAX</strong></div>
+      <div>MISSION POOL: <strong id="total-count">—</strong></div>
+      <div>STATUS: <strong style="color:var(--green)">POLLING ACTIVE</strong></div>
+    </div>
+  </div>
+  <div class="instruction-bar">
+    <div class="pulse-dot"></div>
+    CHOOSE YOUR TOP 3 MISSIONS FOR SUNDAY FUNDAY — CAST YOUR VOTE BELOW
+    <div class="selection-counter"><span id="sel-count">0</span> / 3 SELECTED</div>
+  </div>
+</header>
+
+<div class="main">
+
+  <div class="section-label">REGULAR MISSIONS</div>
+  <div class="grid" id="grid-regular"></div>
+
+  <div class="section-label specials">SPECIAL EVENTS</div>
+  <div class="grid" id="grid-specials"></div>
+
+  <div class="section-label upcoming">UPCOMING</div>
+  <div class="grid" id="grid-upcoming"></div>
+
+  <div class="action-bar">
+    <button class="btn-submit" id="btn-submit" disabled onclick="submitVote()">▶ LOCK IN VOTE</button>
+    <button class="btn-reset" onclick="resetVote()">RESET</button>
+    <span id="submit-hint" style="font-family:'Share Tech Mono',monospace;font-size:11px;color:var(--muted);letter-spacing:1px;"></span>
+  </div>
+
+  <div class="results-panel" id="results-panel">
+    <div class="results-title">// VOTE LOCKED — YOUR PICKS //</div>
+    <div id="results-list"></div>
+    <div class="share-section">
+      COPY FOR DISCORD:
+      <div class="share-text" id="share-text" onclick="copyShare()"></div>
+      <div class="copy-hint" id="copy-hint">▲ CLICK TO COPY TO CLIPBOARD</div>
+    </div>
+  </div>
+
+</div>
+
+<script>
+const missions = {
+  regular: [
+    { name: "100 to Glory", type: "pvp", desc: "Capture center city with ground forces & heavy air defenses", author: "Redemptor" },
+    { name: "Fly's Carrier Competition", type: "pvp", desc: "Marianas — land at the enemy carrier. Most landings wins!", author: "Flybywire-The-German" },
+    { name: "Battle for Rota", type: "pvp", desc: "Bring in troops to Rota — 3 rounds", author: "Flybywire-The-German" },
+    { name: "Bee Hive", type: "pvp", desc: "Helos defend while Jets clear the runway", author: "Auger DCS" },
+    { name: "Birds and Bees", type: "pvp", desc: "Bees land at far airfield, Birds Fox 4 the Bees — 3 rounds", author: "Cap / Auger" },
+    { name: "Bombing Competition", type: "skill", desc: "Dive bomb from increasing altitudes — 5 rounds", author: "Cap" },
+    { name: "Canyon Run", type: "pve", desc: "Survive AAA/SAM-defended canyons as far as possible — 8 rounds", author: "Auger" },
+    { name: "Domination", type: "pvp", desc: "Score points by controlling zones over time — H/C included", author: "Shazam253" },
+    { name: "Final Countdown", type: "pve", desc: "Gen 4 jets defend carrier against waves of warbird attackers", author: "Snick500" },
+    { name: "The Fog", type: "pvp", desc: "Anti-ship mission — take out the Sea Giant in foggy weather", author: "Redemptor" },
+    { name: "Glider Wars", type: "pvp", desc: "Land the most A/C on the airfield. Guns only. Up to 10 rounds", author: "Auger DCS" },
+    { name: "Grim Georgia", type: "pvp", desc: "2 airfields, 4 goals, first to 3. Destroy, escort, survive.", author: "Shazam253" },
+    { name: "Ghost's Airfield vs Airfield", type: "pvp", desc: "Long-range variant — take out defenses and capture airfields", author: "Ghost" },
+    { name: "Hunt the General", type: "pvp", desc: "Air hunters vs ground vehicles racing to the goal — 3 rounds", author: "Cap / Auger" },
+    { name: "King of the Hill", type: "pve", desc: "Capture and hold the hill for 30 minutes — H/C included", author: "Cap" },
+    { name: "Fly's King of the Hill", type: "pve", desc: "Fly's variant — capture and hold the hill, 30 min", author: "Cap / Fly" },
+    { name: "Bomber Wave (Kobayashi Maru)", type: "pve", desc: "Unbeatable bomber wave gauntlet — one A/C, no threats", author: "Snick500" },
+    { name: "Thunderdome", type: "pvp", desc: "Guns-only dogfights inside a confined thunderdome — 5 rounds", author: "Auger DCS" },
+    { name: "Battle for Krymsk", type: "pvp", desc: "NATO vs Warsaw Pact for Krymsk — A2A and A2G, 1989 weapons", author: "Auger DCS" },
+    { name: "Soccer", type: "pvp", desc: "Rocket strikers, H/C scorers, jet defenders, Shilka goalies", author: "Shazam253" },
+    { name: "L-A-S-E-R", type: "pve", desc: "JTAC + H/C buddy lasing for jet bomb drops on vehicle waves", author: "Shazam253" },
+    { name: "Relay Race", type: "pvp", desc: "Up to 4 teams race across the Caucasus from prop to jet", author: "Snick500" },
+    { name: "Phietnam", type: "pve", desc: "Flatten all ground units on Tinian — Red may harass", author: "Shazam253" },
+    { name: "Triathlon", type: "skill", desc: "Canyon run + precision bombing + landing — 4 fighters", author: "Shazam253" },
+  ],
+  specials: [
+    { name: "Black Friday", type: "special", desc: "Halloween/Black Friday — tank waves approach the airfield", author: "Shazam253" },
+    { name: "Grim Bunny", type: "special", desc: "Easter — Blue delivers eggs by H/C, Red intercepts", author: "Shazam253" },
+    { name: "Grim Santa", type: "special", desc: "Xmas — escort Santa (tanker), clear bunkers, stop the Grinches", author: "Shazam253" },
+    { name: "Halloween Gauntlet", type: "special", desc: "Night flight with scary surprises", author: "Auger DCS" },
+    { name: "Poti", type: "special", desc: "Large-scale airfield vs airfield", author: "Auger DCS" },
+    { name: "Red Coards", type: "special", desc: "4th of July mission", author: "Auger DCS" },
+    { name: "Sideways Syria", type: "special", desc: "Self-adjusting PvE/PvP mini-campaign — most points after 90 min wins", author: "Shazam253" },
+  ],
+  upcoming: [
+    { name: "WarBirds vs BumbleBees", type: "pve", desc: "Herc QueenBee protected by BumbleBee helos vs WarBird hunters", author: "Shazam253" },
+    { name: "General SAM vs General HARM", type: "pvp", desc: "Asymmetric warfare — CAS/Helos vs SAM-killing jets", author: "JediJC" },
+  ]
+};
+
+const MAX = 3;
+let selected = new Set();
+
+function getBadge(type) {
+  const map = {
+    pvp: ['badge-pvp', 'PVP'],
+    pve: ['badge-pve', 'PVE'],
+    skill: ['badge-skill', 'COMPETITION'],
+    special: ['badge-special', 'SPECIAL EVENT'],
+  };
+  const [cls, label] = map[type] || ['badge-pve', type.toUpperCase()];
+  return `<span class="mission-type-badge ${cls}">${label}</span>`;
+}
+
+function renderGrid(missions, containerId) {
+  const container = document.getElementById(containerId);
+  missions.forEach((m, i) => {
+    const id = `${containerId}-${i}`;
+    const card = document.createElement('div');
+    card.className = 'mission-card';
+    card.dataset.id = id;
+    card.dataset.name = m.name;
+    card.innerHTML = `
+      <div class="card-header">
+        <div class="check-box"></div>
+        <div class="mission-name">${m.name}</div>
+      </div>
+      ${getBadge(m.type)}
+      <div class="mission-desc">${m.desc}</div>
+      <div class="mission-author">// ${m.author}</div>
+    `;
+    card.addEventListener('click', () => toggleCard(card, id));
+    container.appendChild(card);
+  });
+}
+
+function toggleCard(card, id) {
+  if (card.classList.contains('selected')) {
+    card.classList.remove('selected');
+    selected.delete(id);
+  } else {
+    if (selected.size >= MAX) return;
+    card.classList.add('selected');
+    selected.add(id);
+  }
+  updateUI();
+}
+
+function updateUI() {
+  const count = selected.size;
+  document.getElementById('sel-count').textContent = count;
+  const btn = document.getElementById('btn-submit');
+  btn.disabled = count === 0;
+
+  const hint = document.getElementById('submit-hint');
+  if (count === 0) hint.textContent = 'SELECT AT LEAST 1 MISSION';
+  else if (count < MAX) hint.textContent = `YOU CAN STILL PICK ${MAX - count} MORE`;
+  else hint.textContent = 'MAX SELECTIONS REACHED';
+
+  // Dim unselected cards at max
+  document.querySelectorAll('.mission-card').forEach(c => {
+    if (count >= MAX && !c.classList.contains('selected')) {
+      c.classList.add('maxed');
+    } else {
+      c.classList.remove('maxed');
+    }
+  });
+}
+
+function submitVote() {
+  const picks = [];
+  document.querySelectorAll('.mission-card.selected').forEach(c => {
+    picks.push(c.dataset.name);
+  });
+
+  const resultsList = document.getElementById('results-list');
+  resultsList.innerHTML = picks.map((name, i) => `
+    <div class="result-item">
+      <div class="result-num">${i + 1}.</div>
+      <div style="flex:1">${name}</div>
+      <div class="result-bar-wrap" style="max-width:120px">
+        <div class="result-bar" style="width:${100 - i * 20}%"></div>
+      </div>
+    </div>
+  `).join('');
+
+  const shareText = `🎯 SUNDAY FUNDAY PICKS:\n${picks.map((n, i) => `${i + 1}. ${n}`).join('\n')}`;
+  document.getElementById('share-text').textContent = shareText;
+
+  document.getElementById('results-panel').classList.add('visible');
+  document.getElementById('btn-submit').disabled = true;
+  document.getElementById('btn-submit').textContent = '✓ VOTE LOCKED';
+
+  document.getElementById('results-panel').scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+function resetVote() {
+  selected.clear();
+  document.querySelectorAll('.mission-card').forEach(c => {
+    c.classList.remove('selected', 'maxed');
+  });
+  document.getElementById('results-panel').classList.remove('visible');
+  document.getElementById('btn-submit').textContent = '▶ LOCK IN VOTE';
+  updateUI();
+}
+
+function copyShare() {
+  const text = document.getElementById('share-text').textContent;
+  navigator.clipboard.writeText(text).then(() => {
+    const hint = document.getElementById('copy-hint');
+    hint.innerHTML = '<span class="copied-flash">✓ COPIED TO CLIPBOARD</span>';
+    setTimeout(() => { hint.textContent = '▲ CLICK TO COPY TO CLIPBOARD'; }, 2000);
+  });
+}
+
+// Init
+renderGrid(missions.regular, 'grid-regular');
+renderGrid(missions.specials, 'grid-specials');
+renderGrid(missions.upcoming, 'grid-upcoming');
+
+const total = missions.regular.length + missions.specials.length + missions.upcoming.length;
+document.getElementById('total-count').textContent = total;
+
+updateUI();
+</script>
+</body>
+</html>
